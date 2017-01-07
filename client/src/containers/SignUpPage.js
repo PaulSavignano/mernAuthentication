@@ -5,7 +5,7 @@ class SignUpPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      errors: {}.
+      errors: {},
       user: {
         email: '',
         name: '',
