@@ -10,7 +10,7 @@ const LoginForm = ({
   errors,
   user
 }) => (
-  <Card className="className">
+  <Card className="container">
     <form onSubmit={ onSubmit }>
       <h2 className="card-heading">Login</h2>
       { errors.summary && <p className="error-message">{ errors.summary }</p>}
@@ -28,6 +28,7 @@ const LoginForm = ({
           floatingLabelText="Password"
           type="password"
           name="password"
+          onChange={ onChange }
           errorText={ errors.password }
           value={ user.password }
         />

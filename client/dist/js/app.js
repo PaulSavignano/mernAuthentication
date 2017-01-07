@@ -42019,7 +42019,7 @@
 	      user = _ref.user;
 	  return _react2.default.createElement(
 	    _Card.Card,
-	    { className: 'className' },
+	    { className: 'container' },
 	    _react2.default.createElement(
 	      'form',
 	      { onSubmit: onSubmit },
@@ -42051,6 +42051,7 @@
 	          floatingLabelText: 'Password',
 	          type: 'password',
 	          name: 'password',
+	          onChange: onChange,
 	          errorText: errors.password,
 	          value: user.password
 	        })
