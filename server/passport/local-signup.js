@@ -13,7 +13,7 @@ module.exports = new PassportLocalStrategy({
     name: req.body.name.trim()
   };
   const newUser = new User(userData);
-  newUsers.save((err) => {
+  newUser.save((err) => {
     if (err) { return done(err); }
     return done(null);
   });

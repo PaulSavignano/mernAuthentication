@@ -15,14 +15,6 @@ class SignUpPage extends Component {
     this.processForm = this.processForm.bind(this);
     this.changeUser = this.changeUser.bind(this);
   }
-  changeUser(e) {
-    const field = e.target.name;
-    const user = this.state.user;
-    user[field] = e.target.value;
-    this.setState({
-      user
-    });
-  }
   processForm(e) {
     e.preventDefault();
     console.log(`name: ${this.state.user.name}`);
@@ -32,11 +24,12 @@ class SignUpPage extends Component {
     const email = encodeURIComponent(this.state.user.email);
     const password = encodeURIComponent(this.state.user.password);
     const formData = `name=${name}&email=${email}&password=${password}`;
+
     const xhr = new XMLHttpRequest();
     xhr.open('post', '/auth/signup');
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xhr.responseType = 'json';
-    xhr.addEventListener = ('load', () => {
+    xhr.addEventListener('load', () => {
       if (xhr.status === 200) {
         this.setState({
           errors: {}

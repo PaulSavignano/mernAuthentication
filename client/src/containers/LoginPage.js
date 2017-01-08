@@ -3,7 +3,7 @@ import Auth from '../modules/Auth';
 import LoginForm from '../components/LoginForm';
 
 class LoginPage extends Component {
-  constructor(props) {
+  constructor(props, context) {
     super(props, context);
     const storedMessage = localStorage.getItem('successMessage');
     let successMessage = '';

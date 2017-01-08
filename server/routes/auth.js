@@ -8,17 +8,23 @@ function validateSignupForm(payload) {
   const errors = {};
   let isFormValid = true;
   let message = '';
-  if (!payload || typeof payload.email !== 'string' || !validator.isEmail(payload)) {
+
+  if (!payload || typeof payload.email !== 'string' || !validator.isEmail(payload.email)) {
     isFormValid = false;
     errors.email = 'Please provide a valid email address.';
   }
-  if (!payload || typeof payload.password !== 'string' || !validator.isEmail(payload)) {
+  if (!payload || typeof payload.password !== 'string' || !validator.isEmail(payload.email)) {
     isFormValid = false;
     errors.password = 'Password must have at least 8 characters.';
+  }
+  if (!payload || typeof payload.name !== 'string' || payload.name.trim().length === 0) {
+    isFormValid = false;
+    errors.name = 'Please provide your name.'
   }
   if (!isFormValid) {
     message = 'Check the form for errors.';
   }
+
   return {
     success: isFormValid,
     message,
@@ -55,7 +61,7 @@ function validateLoginForm(payload) {
 router.post('/signup', (req, res, next) => {
   const validationResult = validateSignupForm(req.body);
   if (!validationResult.success) {
-    return res.status(4000).json({
+    return res.status(400).json({
       success: false,
       message: validationResult.message,
       errors: validationResult.errors
