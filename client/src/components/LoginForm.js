@@ -8,12 +8,14 @@ const LoginForm = ({
   onSubmit,
   onChange,
   errors,
+  successMessage,
   user
 }) => (
   <Card className="container">
     <form onSubmit={ onSubmit }>
       <h2 className="card-heading">Login</h2>
-      { errors.summary && <p className="error-message">{ errors.summary }</p>}
+      { successMessage && <p className="success-message">{ successMessage }</p> }
+      { errors.summary && <p className="error-message">{ errors.summary }</p> }
       <div className="field-line">
         <TextField
           floatingLabelText="Email"
@@ -45,6 +47,7 @@ LoginForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
   errors: PropTypes.object.isRequired,
+  successMessage: PropTypes.string.isRequired,
   user: PropTypes.object.isRequired
 };
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const validator = require('validator');
-
+const passport = require('passport');
 const router = new express.Router();
 
 // validate form
@@ -30,6 +30,7 @@ function validateLoginForm(payload) {
   const errors = {};
   let isFormValid = true;
   let message = '';
+
   if (!payload || typeof payload.email !== 'string' || payload.email.trim().length === 0) {
     isFormValid = false;
     errors.email = 'Please provide your email address.';
@@ -38,6 +39,10 @@ function validateLoginForm(payload) {
     isFormValid = false;
     errors.password = 'Please provide your password.';
   }
+  if (!isFormValid) {
+    message = 'Check the form for errors.';
+  }
+
   return {
     success: isFormValid,
     message,
@@ -45,7 +50,9 @@ function validateLoginForm(payload) {
   };
 }
 
-router.post('/signup', (req, res) => {
+
+
+router.post('/signup', (req, res, next) => {
   const validationResult = validateSignupForm(req.body);
   if (!validationResult.success) {
     return res.status(4000).json({
@@ -54,10 +61,32 @@ router.post('/signup', (req, res) => {
       errors: validationResult.errors
     });
   }
-  return res.status(200).end();
+  return passport.authenticate('local-signup', (err) => {
+    if (err) {
+      if (err.name === 'MongoError' && err.code === 11000) {
+        return res.status(409).json({
+          success: false,
+          message: 'Check the form for errors.',
+          errors: {
+            email: 'This email is already taken.'
+          }
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Could not process the form.'
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'You have successfully signed up! You can now log in.'
+    });
+  })(req, res, next);
 });
 
-router.post('/login', (req, res) => {
+
+
+router.post('/login', (req, res, next) => {
   const validationResult = validateLoginForm(req.body);
   if (!validationResult.success) {
     return res.status(400).json({
@@ -66,7 +95,26 @@ router.post('/login', (req, res) => {
       errors: validationResult.errors
     });
   }
-  return res.status(200).end();
-})
+  return passport.authenticate('local-login', (err, token, userData) => {
+    if (err) {
+      if (err.name === 'IncorrectCredentialsError') {
+        return res.status(400).json({
+          success: false,
+          message: err.message
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Could not process the form.'
+      });
+    }
+    return res.json({
+      success: true,
+      message: 'You have successfully logged in!',
+      token,
+      user: userData
+    });
+  })(req, res, next);
+});
 
 module.exports = router;

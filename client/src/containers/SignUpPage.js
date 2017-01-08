@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import SignUpForm from '../components/SignUpForm';
 
 class SignUpPage extends Component {
@@ -41,7 +41,8 @@ class SignUpPage extends Component {
         this.setState({
           errors: {}
         });
-        console.log('The form is valid')
+        localStorage.setItem('successMessage', xhr.response.message);
+        this.context.router.replace('/login');
       } else {
         const errors = xhr.response.errors ? xhr.response.errors : {};
         errors.summary = xhr.response.message;
@@ -51,6 +52,14 @@ class SignUpPage extends Component {
       }
     });
     xhr.send(formData);
+  }
+  changeUser(e) {
+    const field = e.target.name;
+    const user = this.state.user;
+    user[field] = e.target.value;
+    this.setState({
+      user
+    });
   }
   render() {
     return (
@@ -62,6 +71,10 @@ class SignUpPage extends Component {
       />
     );
   }
+}
+
+SignUpPage.contextTypes = {
+  router: PropTypes.object.isRequired
 }
 
 export default SignUpPage;

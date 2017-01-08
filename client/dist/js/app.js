@@ -34255,6 +34255,10 @@
 
 	var _HomePage2 = _interopRequireDefault(_HomePage);
 
+	var _DashboardPage = __webpack_require__(466);
+
+	var _DashboardPage2 = _interopRequireDefault(_DashboardPage);
+
 	var _LoginPage = __webpack_require__(448);
 
 	var _LoginPage2 = _interopRequireDefault(_LoginPage);
@@ -34263,19 +34267,35 @@
 
 	var _SignUpPage2 = _interopRequireDefault(_SignUpPage);
 
+	var _Auth = __webpack_require__(465);
+
+	var _Auth2 = _interopRequireDefault(_Auth);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var routes = {
 	  component: _Base2.default,
 	  childRoutes: [{
 	    path: '/',
-	    component: _HomePage2.default
+	    getComponent: function getComponent(location, callback) {
+	      if (_Auth2.default.isUserAuthenticated()) {
+	        callback(null, _DashboardPage2.default);
+	      } else {
+	        callback(null, _HomePage2.default);
+	      }
+	    }
 	  }, {
 	    path: '/login',
 	    component: _LoginPage2.default
 	  }, {
 	    path: '/signup',
 	    component: _SignUpPage2.default
+	  }, {
+	    path: '/logout',
+	    onEnter: function onEnter(nextState, replace) {
+	      _Auth2.default.deauthenticatedUser();
+	      replace('/');
+	    }
 	  }]
 	};
 
@@ -34297,9 +34317,9 @@
 
 	var _reactRouter = __webpack_require__(333);
 
-	var _MuiThemeProvider = __webpack_require__(316);
+	var _Auth = __webpack_require__(465);
 
-	var _MuiThemeProvider2 = _interopRequireDefault(_MuiThemeProvider);
+	var _Auth2 = _interopRequireDefault(_Auth);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -34320,18 +34340,26 @@
 	          'Authentication App'
 	        )
 	      ),
-	      _react2.default.createElement(
+	      _Auth2.default.isUserAuthenticated() ? _react2.default.createElement(
+	        'div',
+	        { className: 'top-bar-right' },
+	        _react2.default.createElement(
+	          _reactRouter.Link,
+	          { to: '/logout' },
+	          'Log out'
+	        )
+	      ) : _react2.default.createElement(
 	        'div',
 	        { className: 'top-bar-right' },
 	        _react2.default.createElement(
 	          _reactRouter.Link,
 	          { to: '/login' },
-	          'Log In'
+	          'Log in'
 	        ),
 	        _react2.default.createElement(
 	          _reactRouter.Link,
 	          { to: '/signup' },
-	          'Sign Up'
+	          'Sign up'
 	        )
 	      )
 	    ),
@@ -39737,6 +39765,10 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
+	var _Auth = __webpack_require__(465);
+
+	var _Auth2 = _interopRequireDefault(_Auth);
+
 	var _LoginForm = __webpack_require__(449);
 
 	var _LoginForm2 = _interopRequireDefault(_LoginForm);
@@ -39755,10 +39787,17 @@
 	  function LoginPage(props) {
 	    _classCallCheck(this, LoginPage);
 
-	    var _this = _possibleConstructorReturn(this, (LoginPage.__proto__ || Object.getPrototypeOf(LoginPage)).call(this, props));
+	    var _this = _possibleConstructorReturn(this, (LoginPage.__proto__ || Object.getPrototypeOf(LoginPage)).call(this, props, context));
 
+	    var storedMessage = localStorage.getItem('successMessage');
+	    var successMessage = '';
+	    if (storedMessage) {
+	      successMessage = storedMessage;
+	      localStorage.removeItem('successMessage');
+	    }
 	    _this.state = {
 	      errors: {},
+	      successMessage: successMessage,
 	      user: {
 	        email: '',
 	        password: ''
@@ -39780,6 +39819,7 @@
 	      var email = encodeURIComponent(this.state.user.email);
 	      var password = encodeURIComponent(this.state.user.password);
 	      var formData = 'email=' + email + '&password=' + password;
+	      // AJAX
 	      var xhr = new XMLHttpRequest();
 	      xhr.open('post', '/auth/login');
 	      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
@@ -39789,6 +39829,8 @@
 	          _this2.setState({
 	            errors: {}
 	          });
+	          _Auth2.default.authenticateUser(xhr.response.token);
+	          _this2.context.router.replace('/');
 	        } else {
 	          var errors = xhr.response.errors ? xhr.response.errors : {};
 	          errors.summary = xhr.response.message;
@@ -39816,6 +39858,7 @@
 	        onSubmit: this.processForm,
 	        onChange: this.changeUser,
 	        errors: this.state.errors,
+	        successMessage: this.state.successMessage,
 	        user: this.state.user
 	      });
 	    }
@@ -39823,6 +39866,10 @@
 
 	  return LoginPage;
 	}(_react.Component);
+
+	LoginPage.contextTypes = {
+	  router: _react.PropTypes.object.isRequired
+	};
 
 	exports.default = LoginPage;
 
@@ -39858,6 +39905,7 @@
 	  var onSubmit = _ref.onSubmit,
 	      onChange = _ref.onChange,
 	      errors = _ref.errors,
+	      successMessage = _ref.successMessage,
 	      user = _ref.user;
 	  return _react2.default.createElement(
 	    _Card.Card,
@@ -39869,6 +39917,11 @@
 	        'h2',
 	        { className: 'card-heading' },
 	        'Login'
+	      ),
+	      successMessage && _react2.default.createElement(
+	        'p',
+	        { className: 'success-message' },
+	        successMessage
 	      ),
 	      errors.summary && _react2.default.createElement(
 	        'p',
@@ -39922,6 +39975,7 @@
 	  onSubmit: _react.PropTypes.func.isRequired,
 	  onChange: _react.PropTypes.func.isRequired,
 	  errors: _react.PropTypes.object.isRequired,
+	  successMessage: _react.PropTypes.string.isRequired,
 	  user: _react.PropTypes.object.isRequired
 	};
 
@@ -42013,7 +42067,8 @@
 	          _this2.setState({
 	            errors: {}
 	          });
-	          console.log('The form is valid');
+	          localStorage.setItem('successMessage', xhr.response.message);
+	          _this2.context.router.replace('/login');
 	        } else {
 	          var errors = xhr.response.errors ? xhr.response.errors : {};
 	          errors.summary = xhr.response.message;
@@ -42023,6 +42078,16 @@
 	        }
 	      });
 	      xhr.send(formData);
+	    }
+	  }, {
+	    key: 'changeUser',
+	    value: function changeUser(e) {
+	      var field = e.target.name;
+	      var user = this.state.user;
+	      user[field] = e.target.value;
+	      this.setState({
+	        user: user
+	      });
 	    }
 	  }, {
 	    key: 'render',
@@ -42038,6 +42103,10 @@
 
 	  return SignUpPage;
 	}(_react.Component);
+
+	SignUpPage.contextTypes = {
+	  router: _react.PropTypes.object.isRequired
+	};
 
 	exports.default = SignUpPage;
 
@@ -42147,6 +42216,176 @@
 	};
 
 	exports.default = SignUpForm;
+
+/***/ },
+/* 465 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Auth = function () {
+	  function Auth() {
+	    _classCallCheck(this, Auth);
+	  }
+
+	  _createClass(Auth, null, [{
+	    key: 'authenticateUser',
+
+	    // Authenticate user and save a token in local storage
+	    value: function authenticateUser(token) {
+	      localStorage.setItem('token', token);
+	    }
+	    // check if user has a token in local storage
+
+	  }, {
+	    key: 'isUserAuthenticated',
+	    value: function isUserAuthenticated() {
+	      return localStorage.getItem('token') !== null;
+	    }
+	    // remove token from local storage
+
+	  }, {
+	    key: 'deauthenticatedUser',
+	    value: function deauthenticatedUser() {
+	      localStorage.removeItem('token');
+	    }
+	  }, {
+	    key: 'getToken',
+	    value: function getToken() {
+	      return localStorage.getItem('token');
+	    }
+	  }]);
+
+	  return Auth;
+	}();
+
+	exports.default = Auth;
+
+/***/ },
+/* 466 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _Auth = __webpack_require__(465);
+
+	var _Auth2 = _interopRequireDefault(_Auth);
+
+	var _Dashboard = __webpack_require__(467);
+
+	var _Dashboard2 = _interopRequireDefault(_Dashboard);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var DashboardPage = function (_Component) {
+	  _inherits(DashboardPage, _Component);
+
+	  function DashboardPage(props) {
+	    _classCallCheck(this, DashboardPage);
+
+	    var _this = _possibleConstructorReturn(this, (DashboardPage.__proto__ || Object.getPrototypeOf(DashboardPage)).call(this, props));
+
+	    _this.state = {
+	      secretData: ''
+	    };
+	    return _this;
+	  }
+
+	  _createClass(DashboardPage, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      var _this2 = this;
+
+	      var xhr = new XMLHttpRequest();
+	      xhr.open('get', '/api/dashboard');
+	      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	      xhr.setRequestHeader('Authorization', 'bearer ' + _Auth2.default.getToken());
+	      xhr.responseType = 'json';
+	      xhr.addEventListener('load', function () {
+	        if (xhr.status === 200) {
+	          _this2.setState({
+	            secretData: xhr.response.message
+	          });
+	        }
+	      });
+	      xhr.send();
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      return _react2.default.createElement(_Dashboard2.default, { secretData: this.state.secretData });
+	    }
+	  }]);
+
+	  return DashboardPage;
+	}(_react.Component);
+
+	exports.default = DashboardPage;
+
+/***/ },
+/* 467 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _Card = __webpack_require__(390);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Dashboard = function Dashboard(_ref) {
+	  var secretData = _ref.secretData;
+	  return _react2.default.createElement(
+	    _Card.Card,
+	    { className: 'container' },
+	    _react2.default.createElement(_Card.CardTitle, {
+	      title: 'Dashboard',
+	      subtitle: 'You should get access to this page only after authentication.'
+	    }),
+	    secretData && _react2.default.createElement(
+	      _Card.CardText,
+	      { style: { fontSize: '16px', color: 'green' } },
+	      secretData
+	    )
+	  );
+	};
+
+	Dashboard.propTypes = {
+	  secretData: _react.PropTypes.string.isRequired
+	};
+
+	exports.default = Dashboard;
 
 /***/ }
 /******/ ]);
